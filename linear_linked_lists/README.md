@@ -1,5 +1,7 @@
 # Linked Lists
 
+NOTE: This program is NOT made to be run directly. It is meant to be cloned by a student, who then implements the Student class by themselves. 
+
 ## Node.h
 
 A Node class for a linked list of Student objects.
