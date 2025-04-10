@@ -9,12 +9,14 @@ class Node {
   Node (int);
 
   // setters
+  void setParent (Node*);
   void setLeft (Node*);
   void setRight (Node*);
   void setValue (int);
   void setColor (int);
 
   // getters
+  Node* getParent ();
   Node* getLeft ();
   Node* getRight ();
   int getValue ();
@@ -23,6 +25,7 @@ class Node {
  private:
   int value;
   int color;
+  Node* parent;
   Node* left;
   Node* right;
 };
