@@ -6,8 +6,10 @@
 using namespace std;
 
 void add (Node* &root, int n);
-Node* insert (Node* cur, int n);
-void restructure (Node* &root, Node* k);
+Node* find (Node* root, int n);
+void leftRotate (Node* &root, Node* n);
+void rightRotate (Node* &root, Node* n);
+void insert (Node* &root, Node* p, int n);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -52,162 +54,156 @@ int main () {
 
 // main function for adding a node to the tree
 void add (Node* &root, int n) {
-  Node* k = insert (root, n);
-  print(root, 0);
-  cout << endl << "k value " << k->getValue() << endl;
-  restructure (root, k);
+  Node* p = find (root, n);
+  insert (root, p, n);
+  root->setColor(0);
   return;
 }
 
-// insert a node with the BST algorithm
-Node* insert (Node* cur, int n) {
+// find where to insert the node with the BST algorithm
+Node* find (Node* root, int n) {
   cout << "Inserting..." << endl;
-  cout << "Cur value: " << cur->getValue() << "  N value: " << n << endl;
-  if (cur->getValue() == 0) {
-    cur->setValue(n);
-    cur->setColor(1);
-    return cur;
-  }
-  else if (n <= cur->getValue()) {
-    if (cur->getLeft()) { return insert (cur->getLeft(), n); }
+  Node* cur = root;
+  Node* parent = NULL;
+  while (cur && cur->getValue() != 0) {
+    parent = cur;
+    if (n <= cur->getValue()) {
+      cur = cur->getLeft();
+    }
     else {
-      cur->setLeft (new Node(n));
-      cur->getLeft()->setColor(1);
-      cur->getLeft()->setParent(cur);
-      return cur->getLeft();
+      cur = cur->getRight();
     }
   }
-  else if (n > cur->getValue()) {
-    if (cur->getRight()) { return insert (cur->getRight(), n); }
-    else {
-      cur->setRight (new Node(n));
-      cur->getRight()->setColor(1);
-      cur->getRight()->setParent(cur);
-      return cur->getRight();
-    }
-  }
-  return NULL;
+  return parent;
 }
 
-// restructure the nodes if needed
-void restructure (Node* &root, Node* k) {
+// insert the node needed
+void insert (Node* &root, Node* p, int k) {
+  Node* n = new Node(k);
+  n->setParent(p);
+  n->setColor(1);
+
   cout << "Restructuring..." << endl;
-  Node* grandparent;
-  Node* parent;
-  Node* uncle = NULL;
-  Node* sibling = NULL;
-  Node* cur = root;
 
-  // get the relatives of cur
-  while (cur && cur != k) {
-    cout << "Cur: " << cur->getValue() << endl;
-    if (cur->getRight()) {
-      cout << "cur has a right of " << cur->getRight() << endl;
-    }
-    cout << "K value " << k->getValue() << endl;
-    if (cur->getValue() > k->getValue()) {
-      if (cur->getLeft()) { cur = cur->getLeft(); }
-      else { cout << "Something went wrong." << endl; return; }
-    }
-    else {
-      if (cur->getRight()) { cur = cur->getRight(); }
-      else { cout << "Something went wrong." << endl; return; }
-    }
+  // case 0: N is the root node (parent = NULL)
+  if (!p) {
+    root = n;
+    n->setParent(NULL);
+    n->setColor(0);
+    return;
   }
 
-  // fill in parent, grandparent
-  parent = cur->getParent();
-  if (!parent) { parent = root; }
-  grandparent = parent->getParent();
-  if (!grandparent) { grandparent = root; }
+  // N's parent exists...
+  if (n->getValue() <= p->getValue()) { p->setLeft(n); }
+  else { p->setRight(n); }
+
+  // case 1: N's parent is black (no restructure needed)
+  if (p->getColor() == 0) { return; }
+
+  // all the cases that might cause segfault errors:
   
-  // case 0: K is the root node (parent = NULL)
-  if (k == root) { cout << "ROOT" << endl; cur->setColor(0); return; }
-    
-  // case 1: parent of K is black (no restructure needed)
-  if (parent->getColor() == 0) { cout << "NONE" << endl; return; }
-
-  // fill in uncle and sibling nodes
-  if (parent == grandparent->getLeft()) {
-    if (grandparent->getRight()) { uncle = grandparent->getRight(); }
+  // get relatives of node
+  Node* g = n->getParent()->getParent();
+  Node* u = g->getLeft();
+  if (p->getValue() <= g->getValue()) {
+    u = g->getRight();
   }
-  else {
-    if (grandparent->getLeft()) { uncle = grandparent->getLeft(); }
-  }
-  if (cur == parent->getLeft()) {
-    if (parent->getRight()) { sibling = parent->getRight(); }
-  }
-  else {
-    if (parent->getLeft()) { sibling = parent->getLeft(); }
+  Node* s = p->getLeft();
+  if (n->getValue() <= p->getValue()) {
+    s = p->getRight();
   }
 
-  if (uncle) { cout << "UNCLE: " << uncle->getValue() << endl; } else { cout << "NO UNCLE" << endl; }
-  if (sibling) { cout << "SIBLING: " << sibling->getValue() << endl; } else { cout << "NO SIBLING" << endl; }
+  // REWRITE: changed recursive function to iterative function
+  // I kept getting into infinite loops, lol...
+
+  while (n && n->getParent() && n->getParent()->getColor() != 0) {
+    // case 2: P is red (restructure/recolor needed)
+    //   case 2a: U is black or null (restructure needed)
+    // algorithm from https://www.programiz.com/dsa/red-black-tree
+    // recoloring info from https://pages.cs.wisc.edu/~cs400/readings/Red-Black-Trees/
+    if (!u || u->getColor() == 0) {
+      // N <= P <= G
+      if (n->getValue() <= p->getValue() && p->getValue() <= g->getValue()) {
+	p->setColor(0);
+	g->setColor(1);
+	rightRotate(root, g);
+      }
+      // N > P, P <= G
+      else if (n->getValue() > p->getValue() && p->getValue() <= g->getValue()) {
+	leftRotate(root, p);
+	p->getParent()->setColor(0);
+	g->setColor(1);
+	rightRotate(root, g);
+      }
+      // N > P > G
+      else if (n->getValue() > p->getValue() && p->getValue() > g->getValue()) {
+	p->setColor(0);
+	g->setColor(1);
+	leftRotate(root, g);
+      }
+      // N <= P, P > G
+      else if (n->getValue() <= p->getValue() && p->getValue() > g->getValue()) {
+	rightRotate(root, p);
+	p->getParent()->setColor(0);
+	g->setColor(1);
+	leftRotate(root, g);	
+      }
+    }
     
-  // case 2: parent of K is red (restructure/recolor needed)
-  //   case 2a: uncle of K is black or null (restructure needed)
-  if (!uncle || uncle->getColor() == 0) {
-    // K < parent of K < G
-    if (cur->getValue() <= parent->getValue() &&
-	parent->getValue() <= grandparent->getValue()) {
-      Node* tempG = grandparent;
-      grandparent = grandparent->getLeft();
-      grandparent->setColor(0);
-      grandparent->setRight(tempG);
-      grandparent->getRight()->setColor(1);
-      grandparent->getRight()->setLeft(sibling);
-      grandparent->getRight()->setRight(uncle);
-    }
-    else if (cur->getValue() > parent->getValue() &&
-	     parent->getValue() <= grandparent->getValue()) {
-      Node* tempG = grandparent;
-      grandparent = grandparent->getLeft()->getRight();
-      grandparent->setColor(0);
-      grandparent->setLeft(parent);
-      grandparent->getLeft()->setLeft(sibling);
-      grandparent->getLeft()->setRight(NULL);
-      grandparent->setRight(tempG);
-      grandparent->getRight()->setColor(1);
-      grandparent->getRight()->setRight(uncle);
-    }
-    else if (cur->getValue() > parent->getValue() &&
-	     parent->getValue() > grandparent->getValue()) {
-      Node* tempG = grandparent;
-      Node* tempGG = root;
-      if (grandparent->getParent()) { tempGG = grandparent->getParent(); }
-      grandparent = grandparent->getRight();
-      grandparent->getRight()->setColor(0);
-      grandparent->setLeft(tempG);
-      grandparent->getLeft()->setColor(1);
-      grandparent->getLeft()->setLeft(uncle);
-      grandparent->getLeft()->setRight(sibling);
-      cout << "GRANDPARENT: " << grandparent << " w/ val " << grandparent->getValue() << endl;
-      if (grandparent->getLeft())
-	cout << "LEFT: " << grandparent->getLeft() << " w/ val " << grandparent->getLeft()->getValue() << endl;
-      if (grandparent->getRight())
-	cout << "RIGHT: " << grandparent->getRight() << " w/ val " << grandparent->getRight()->getValue() << endl;
-    }
-    else if (cur->getValue() <= parent->getValue() &&
-	     parent->getValue() > grandparent->getValue()) {
-      Node* tempG = grandparent;
-      grandparent = grandparent->getRight()->getLeft();
-      grandparent->setColor(0);
-      grandparent->setRight(parent);
-      grandparent->getRight()->setRight(sibling);
-      grandparent->getRight()->setLeft(NULL);
-      grandparent->setLeft(tempG);
-      grandparent->getLeft()->setColor(1);
-      grandparent->getLeft()->setLeft(uncle);
+    //   case 2b: U is red (recolor needed)
+    else if (u->getColor() == 1) {
+      g->setColor(1);
+      p->setColor(0);
+      u->setColor(0);
     }
   }
-  //   case 2b: uncle of K is red (recolor needed)
-  else if (uncle->getColor() == 1) {
-    grandparent->setColor(1);
-    parent->setColor(0);
-    uncle->setColor(0);
-    // resolve potential double-red scenario
-    restructure (root, grandparent); 
+  return;
+}
+
+// left rotate
+void leftRotate (Node* &root, Node* n) {
+  Node* rc = n->getRight();
+  Node* rclc = rc->getLeft();
+  
+  n->setRight(rclc);
+  if (rclc) {
+    rclc->setParent(n);
   }
+  if (!n->getParent()) {
+    root = rc;
+    rc->setParent(NULL);
+  }
+  else if (n->getValue() <= n->getParent()->getValue()) {
+    n->getParent()->setLeft(rc);
+  }
+  else {
+    n->getParent()->setRight(rc);
+  }
+  rc->setLeft(n);
+  n->setParent(rc);
+  return;
+}
+
+// right rotate
+void rightRotate (Node* &root, Node* n) {
+  Node* lc = n->getLeft();
+  Node* lcrc = lc->getRight();
+  n->setLeft(lcrc);
+  if (lcrc) {
+    lcrc->setParent(n);
+  }
+  if (n->getParent() == NULL) {
+    root = lc;
+    lc->setParent(NULL);
+  }
+  else if (n->getValue() > n->getParent()->getValue()) {
+    n->getParent()->setRight(lc);
+  }
+  else {
+    n->getParent()->setLeft(lc);
+  }
+  lc->setRight(n);
+  n->setParent(lc);
   return;
 }
 
@@ -216,7 +212,7 @@ void read (Node* &root) {
   // file info
   cout << "Name of file?" << endl;
   string fname;
-  getline (cin, fname); cin.get();
+  getline (cin, fname); 
 
   // open file
   ifstream fin (fname);
