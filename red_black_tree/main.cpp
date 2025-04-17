@@ -1,4 +1,4 @@
-#include <iostream>
+ #include <iostream>
 #include <fstream>
 #include <string>
 #include "Node.h"
@@ -10,6 +10,7 @@ Node* find (Node* root, int n);
 void leftRotate (Node* &root, Node* n);
 void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
+Node* search (Node* root, int n);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -25,6 +26,7 @@ int main () {
     cout << "Your commands are:" << endl;
     cout << "ADD - add a single node" << endl;
     cout << "READ - read nodes from a file" << endl;
+    cout << "SEARCH - search for a number in the tree" << endl;
     cout << "PRINT - print the tree" << endl;
     cout << "QUIT - quit the program" << endl << endl;
 
@@ -40,6 +42,13 @@ int main () {
       cout << "Done." << endl;
     }
     else if (input == "READ") { read (root); }
+    else if (input == "SEARCH") {
+      cout << "Number to search?" << endl;
+      int n; cin >> n; cin.get();
+      Node* k = search (root, n);
+      if (k) { cout << "Found." << endl; }
+      else { cout << "Node doesn't exist." << endl; }
+    }
     else if (input == "PRINT") { print (root, 0); }
     else if (input == "QUIT") {
       cout << "Sorry to see you go." << endl;
@@ -61,6 +70,8 @@ void add (Node* &root, int n) {
 }
 
 // find where to insert the node with the BST algorithm
+// this differs from the SEARCH function in that find returns the parent of the node
+// and search returns the node
 Node* find (Node* root, int n) {
   cout << "Inserting..." << endl;
   Node* cur = root;
@@ -205,6 +216,17 @@ void rightRotate (Node* &root, Node* n) {
   lc->setRight(n);
   n->setParent(lc);
   return;
+}
+
+// search for a number in the tree
+Node* search (Node* root, int n) {
+  Node* cur = root;
+  while (cur->getValue() != n) {
+    if (n < cur->getValue() && cur->getLeft()) { cur = cur->getLeft(); }
+    else if (n > cur->getValue() && cur->getRight()) { cur = cur->getRight(); }
+    else { return NULL; }
+  }
+  return cur;
 }
 
 // read numbers from a file
