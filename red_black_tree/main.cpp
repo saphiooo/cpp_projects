@@ -11,6 +11,8 @@ void leftRotate (Node* &root, Node* n);
 void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
 Node* search (Node* root, int n);
+//void remove (Node* &root, int n);
+//void destroy (Node* &root, Node* p, int n);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -24,9 +26,10 @@ int main () {
   while (running) {
     // commands
     cout << "Your commands are:" << endl;
-    cout << "ADD - add a single node" << endl;
+    cout << "ADD - add a node to the tree" << endl;
     cout << "READ - read nodes from a file" << endl;
-    cout << "SEARCH - search for a number in the tree" << endl;
+    cout << "SEARCH - search for a node in the tree" << endl;
+    cout << "REMOVE - remove a node from the tree" << endl;
     cout << "PRINT - print the tree" << endl;
     cout << "QUIT - quit the program" << endl << endl;
 
@@ -49,6 +52,12 @@ int main () {
       if (k) { cout << "Found." << endl; }
       else { cout << "Node doesn't exist." << endl; }
     }
+    else if (input == "REMOVE") {
+      cout << "Number to delete?" << endl;
+      int n; cin >> n; cin.get();
+      //remove (root, n);
+      cout << "Done." << endl;
+    }
     else if (input == "PRINT") { print (root, 0); }
     else if (input == "QUIT") {
       cout << "Sorry to see you go." << endl;
@@ -66,6 +75,7 @@ void add (Node* &root, int n) {
   Node* p = find (root, n);
   insert (root, p, n);
   root->setColor(0);
+  print(root, 0);
   return;
 }
 
@@ -145,6 +155,7 @@ void insert (Node* &root, Node* p, int k) {
 	p->getParent()->setColor(0);
 	g->setColor(1);
 	rightRotate(root, g);
+	print(root, 0);
       }
       // N > P > G
       else if (n->getValue() > p->getValue() && p->getValue() > g->getValue()) {
@@ -167,6 +178,10 @@ void insert (Node* &root, Node* p, int k) {
       p->setColor(0);
       u->setColor(0);
     }
+
+    cout << "n " << n->getValue() << endl;
+    cout << "par " << n->getParent()->getValue() << endl;
+    cout << "par col " << n->getParent()->getColor() << endl;
   }
   return;
 }
@@ -228,7 +243,29 @@ Node* search (Node* root, int n) {
   }
   return cur;
 }
+/*
+// delete a number from the tree
+void remove (Node* &root, int n) {
+  Node* p = find (root, n);
+  destroy (root, p, n);
+  root->setColor(0);
+  return;
+}
 
+
+void destroy (Node* &root, Node* p, int n) {
+  Node* k;
+  if (p->getValue() <= n) { k = n->getLeft(); }
+  else { k = n->getRight(); }
+
+  Node* s = k->getRight();
+  while (s && s->getLeft()) {
+    s = s->getLeft();
+  }
+
+  
+}
+*/
 // read numbers from a file
 void read (Node* &root) {
   // file info
