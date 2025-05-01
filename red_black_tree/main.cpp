@@ -11,8 +11,8 @@ void leftRotate (Node* &root, Node* n);
 void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
 Node* search (Node* root, int n);
-void remove (Node* &root, int n);
-void destroy (Node* &root, Node* p, int k);
+//void remove (Node* &root, int n);
+//void destroy (Node* &root, Node* p, int k);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -29,7 +29,7 @@ int main () {
     cout << "ADD - add a node to the tree" << endl;
     cout << "READ - read nodes from a file" << endl;
     cout << "SEARCH - search for a node in the tree" << endl;
-    cout << "REMOVE - remove a node from the tree" << endl;
+    //cout << "REMOVE - remove a node from the tree" << endl;
     cout << "PRINT - print the tree" << endl;
     cout << "QUIT - quit the program" << endl << endl;
 
@@ -49,13 +49,13 @@ int main () {
       Node* k = search (root, n);
       if (k) { cout << "Found." << endl; }
       else { cout << "Node doesn't exist." << endl; }
-    }
+    }/*
     else if (input == "REMOVE") {
       cout << "Number to delete?" << endl;
       int n; cin >> n; cin.get();
       remove (root, n);
       cout << "Done." << endl;
-    }
+      }*/
     else if (input == "PRINT") { print (root, 0); }
     else if (input == "QUIT") {
       cout << "Sorry to see you go." << endl;
@@ -72,7 +72,6 @@ int main () {
 void add (Node* &root, int n) {
   Node* p = find (root, n);
   insert (root, p, n);
-  print(root, 0);
   return;
 }
 
@@ -118,7 +117,6 @@ void insert (Node* &root, Node* p, int k) {
   
   // all the cases that might cause segfault errors:
   while (n && n->getParent() && n->getParent()->getColor() != 0) {
-    cout << "hi!" << endl;
     // get relatives of node
     g = n->getParent()->getParent(); 
     u = g->getLeft(); 
@@ -234,7 +232,7 @@ Node* search (Node* root, int n) {
   }
   return cur;
 }
-
+/*
 // delete a number from the tree
 void remove (Node* &root, int n) {
   Node* p = find (root, n);
@@ -287,7 +285,7 @@ void destroy (Node* &root, Node* p, int k) {
 
   return;  
 }
-
+*/
 // read numbers from a file
 void read (Node* &root) {
   // file info
