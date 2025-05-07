@@ -29,7 +29,7 @@ int main () {
     cout << "ADD - add a node to the tree" << endl;
     cout << "READ - read nodes from a file" << endl;
     cout << "SEARCH - search for a node in the tree" << endl;
-    //cout << "REMOVE - remove a node from the tree" << endl;
+    cout << "REMOVE - remove a node from the tree" << endl;
     cout << "PRINT - print the tree" << endl;
     cout << "QUIT - quit the program" << endl << endl;
 
@@ -123,7 +123,7 @@ void insert (Node* &root, Node* p, int k) {
     if (p->getValue() <= g->getValue()) {
       u = g->getRight();
     }
-
+    if (u) cout << u->getValue() << " " << u->getColor() << endl;
     // case 2: P is red (restructure/recolor needed)
     //   case 2a: U is black or null (restructure needed)
     // algorithm from https://www.programiz.com/dsa/red-black-tree
@@ -155,6 +155,9 @@ void insert (Node* &root, Node* p, int k) {
 	g->setColor(1);
 	leftRotate(root, g);
       }
+      
+      n = n->getParent();
+      if (n) { p = n->getParent(); }
     }
     
     //   case 2b: U is red (recolor needed)
@@ -162,10 +165,12 @@ void insert (Node* &root, Node* p, int k) {
       g->setColor(1);
       p->setColor(0);
       u->setColor(0);
+
+      n = g;
+      if (n) { p = n->getParent(); }
     }
 
-    n = n->getParent();
-    if (n) { p = n->getParent(); }
+
     root->setColor(0);
   }
   return;
