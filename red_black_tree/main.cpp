@@ -1,4 +1,4 @@
- #include <iostream>
+#include <iostream>
 #include <fstream>
 #include <string>
 #include "Node.h"
@@ -35,7 +35,6 @@ int main () {
 
     string input;
     getline (cin, input); 
-    cout << "Your command was: " << input << endl;
 
     // do command
     if (input == "ADD") {
@@ -114,30 +113,32 @@ void insert (Node* &root, Node* p, int k) {
     return;
   }
 
+  cout << "HI" << endl;
+  
   // N's parent exists...
   if (n->getValue() <= p->getValue()) { p->setLeft(n); }
   else { p->setRight(n); }
 
-  // case 1: N's parent is black (no restructure needed)
-  if (p->getColor() == 0) { return; }
+  Node* g;
+  Node* u;
 
-  // all the cases that might cause segfault errors:
+  cout << "N " << n->getValue();
+  if (n->getParent()) cout << " P " << p->getValue();
   
-  // get relatives of node
-  Node* g = n->getParent()->getParent();
-  Node* u = g->getLeft();
-  if (p->getValue() <= g->getValue()) {
-    u = g->getRight();
-  }
-  Node* s = p->getLeft();
-  if (n->getValue() <= p->getValue()) {
-    s = p->getRight();
-  }
-
-  // REWRITE: changed recursive function to iterative function
-  // I kept getting into infinite loops, lol...
-
   while (n && n->getParent() && n->getParent()->getColor() != 0) {
+    // all the cases that might cause segfault errors:
+    // get relatives of node
+    p = n->getParent();
+    g = n->getParent()->getParent();
+    u = g->getLeft();
+    if (p->getValue() <= g->getValue()) {
+      u = g->getRight();
+    }
+
+    if (p) cout << "P " << p->getValue();
+    if (u) cout << " U " << u->getValue();
+    if (g) cout << " G " << g->getValue();
+    
     // case 2: P is red (restructure/recolor needed)
     //   case 2a: U is black or null (restructure needed)
     // algorithm from https://www.programiz.com/dsa/red-black-tree
@@ -166,9 +167,11 @@ void insert (Node* &root, Node* p, int k) {
       // N <= P, P > G
       else if (n->getValue() <= p->getValue() && p->getValue() > g->getValue()) {
 	rightRotate(root, p);
+	print(root, 0);
 	p->getParent()->setColor(0);
 	g->setColor(1);
-	leftRotate(root, g);	
+	leftRotate(root, g);
+	print(root, 0);
       }
     }
     
@@ -182,6 +185,8 @@ void insert (Node* &root, Node* p, int k) {
     cout << "n " << n->getValue() << endl;
     cout << "par " << n->getParent()->getValue() << endl;
     cout << "par col " << n->getParent()->getColor() << endl;
+    n = n->getParent();
+    p = n->getParent();
   }
   return;
 }
