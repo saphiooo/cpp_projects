@@ -12,7 +12,7 @@ void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
 Node* search (Node* root, int n);
 //void remove (Node* &root, int n);
-//void destroy (Node* &root, Node* p, int n);
+//void destroy (Node* &root, Node* p, int k);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -38,7 +38,6 @@ int main () {
 
     // do command
     if (input == "ADD") {
-      cout << "Number to be added?" << endl;
       int n; cin >> n; cin.get();
       add (root, n);
       cout << "Done." << endl;
@@ -50,13 +49,13 @@ int main () {
       Node* k = search (root, n);
       if (k) { cout << "Found." << endl; }
       else { cout << "Node doesn't exist." << endl; }
-    }
+    }/*
     else if (input == "REMOVE") {
       cout << "Number to delete?" << endl;
       int n; cin >> n; cin.get();
-      //remove (root, n);
+      remove (root, n);
       cout << "Done." << endl;
-    }
+      }*/
     else if (input == "PRINT") { print (root, 0); }
     else if (input == "QUIT") {
       cout << "Sorry to see you go." << endl;
@@ -73,16 +72,14 @@ int main () {
 void add (Node* &root, int n) {
   Node* p = find (root, n);
   insert (root, p, n);
-  root->setColor(0);
-  print(root, 0);
   return;
 }
 
 // find where to insert the node with the BST algorithm
 // this differs from the SEARCH function in that find returns the parent of the node
-// and search returns the node
+// and search returns the node, which, yeah, I agree, should be refactored
+// into a singular function, but I don't wanna. :P
 Node* find (Node* root, int n) {
-  cout << "Inserting..." << endl;
   Node* cur = root;
   Node* parent = NULL;
   while (cur && cur->getValue() != 0) {
@@ -103,8 +100,6 @@ void insert (Node* &root, Node* p, int k) {
   n->setParent(p);
   n->setColor(1);
 
-  cout << "Restructuring..." << endl;
-
   // case 0: N is the root node (parent = NULL)
   if (!p) {
     root = n;
@@ -121,24 +116,16 @@ void insert (Node* &root, Node* p, int k) {
 
   Node* g;
   Node* u;
-
-  cout << "N " << n->getValue();
-  if (n->getParent()) cout << " P " << p->getValue();
   
+  // all the cases that might cause segfault errors:
   while (n && n->getParent() && n->getParent()->getColor() != 0) {
-    // all the cases that might cause segfault errors:
     // get relatives of node
-    p = n->getParent();
-    g = n->getParent()->getParent();
-    u = g->getLeft();
+    g = n->getParent()->getParent(); 
+    u = g->getLeft(); 
     if (p->getValue() <= g->getValue()) {
       u = g->getRight();
     }
 
-    if (p) cout << "P " << p->getValue();
-    if (u) cout << " U " << u->getValue();
-    if (g) cout << " G " << g->getValue();
-    
     // case 2: P is red (restructure/recolor needed)
     //   case 2a: U is black or null (restructure needed)
     // algorithm from https://www.programiz.com/dsa/red-black-tree
@@ -156,7 +143,6 @@ void insert (Node* &root, Node* p, int k) {
 	p->getParent()->setColor(0);
 	g->setColor(1);
 	rightRotate(root, g);
-	print(root, 0);
       }
       // N > P > G
       else if (n->getValue() > p->getValue() && p->getValue() > g->getValue()) {
@@ -171,8 +157,10 @@ void insert (Node* &root, Node* p, int k) {
 	p->getParent()->setColor(0);
 	g->setColor(1);
 	leftRotate(root, g);
-	print(root, 0);
       }
+      
+      n = n->getParent();
+      if (n) { p = n->getParent(); }
     }
     
     //   case 2b: U is red (recolor needed)
@@ -180,13 +168,12 @@ void insert (Node* &root, Node* p, int k) {
       g->setColor(1);
       p->setColor(0);
       u->setColor(0);
+
+      n = g;
+      if (n) { p = n->getParent(); }
     }
 
-    cout << "n " << n->getValue() << endl;
-    cout << "par " << n->getParent()->getValue() << endl;
-    cout << "par col " << n->getParent()->getColor() << endl;
-    n = n->getParent();
-    p = n->getParent();
+    root->setColor(0);
   }
   return;
 }
@@ -206,9 +193,11 @@ void leftRotate (Node* &root, Node* n) {
   }
   else if (n->getValue() <= n->getParent()->getValue()) {
     n->getParent()->setLeft(rc);
+    rc->setParent(n->getParent());
   }
   else {
     n->getParent()->setRight(rc);
+    rc->setParent(n->getParent());
   }
   rc->setLeft(n);
   n->setParent(rc);
@@ -229,9 +218,11 @@ void rightRotate (Node* &root, Node* n) {
   }
   else if (n->getValue() > n->getParent()->getValue()) {
     n->getParent()->setRight(lc);
+    lc->setParent(n->getParent());
   }
   else {
     n->getParent()->setLeft(lc);
+    lc->setParent(n->getParent());
   }
   lc->setRight(n);
   n->setParent(lc);
@@ -258,17 +249,48 @@ void remove (Node* &root, int n) {
 }
 
 
-void destroy (Node* &root, Node* p, int n) {
-  Node* k;
-  if (p->getValue() <= n) { k = n->getLeft(); }
-  else { k = n->getRight(); }
+void destroy (Node* &root, Node* p, int k) {
+  if (p) {
+    Node* n; // node to be deleted
+    if (k <= p->getValue()) { n = p->getLeft(); }
+    else { n = p->getRight(); }
+  }
+  else { // n is the root
+    n = root;
+  }
+  int numChildren = 0;
+  if (n->getLeft()) { numChildren ++; }
+  if (n->getRight()) { numChildren ++; }
 
-  Node* s = k->getRight();
-  while (s && s->getLeft()) {
-    s = s->getLeft();
+  // zero child deletion
+  if (numChildren == 0) {
+    if (n == root) { root = NULL; }
+    else if (n->getValue() <= p->getValue()) { p->setLeft(NULL); }
+    else if (n->getValue() > p->getValue()) { p->setRight(NULL); }
   }
 
+  // one child deletion
+  else if (numChildren == 1) {
+    Node* c = n->getLeft();
+    if (!c) { c = n->getRight(); }
+    if (n == root) { root = c; }
+    else if (n->getValue() <= p->getValue()) { p->setLeft(c); }
+    else if (n->getValue() > p->getValue()) { p->setRight(c); }
+  }
   
+  // two child deletion
+  else if (numChildren == 2) {
+    Node* s = n->getRight();
+    while (s->getLeft()) { s = s->getLeft(); }
+    n->setValue(s->getValue());
+    if (s->getRight() != NULL) { s->getParent()->setRight(s->getRight()); }
+    else if (s->getParent()->getRight() == s) { s->getParent()->setRight(NULL); }
+    else { s->getParent()->setLeft(NULL); }
+  }
+    
+  else { cout << "Something went wrong." << endl; }
+
+  return;  
 }
 */
 // read numbers from a file
