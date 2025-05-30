@@ -11,8 +11,9 @@ void leftRotate (Node* &root, Node* n);
 void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
 Node* search (Node* root, int n);
-//void remove (Node* &root, int n);
-//void destroy (Node* &root, Node* p, int k);
+void remove (Node* &root, int n);
+void destroy (Node* &root, Node* n, int c);
+void destroyHelper (Node* &root, Node* x);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -49,13 +50,13 @@ int main () {
       Node* k = search (root, n);
       if (k) { cout << "Found." << endl; }
       else { cout << "Node doesn't exist." << endl; }
-    }/*
+    }
     else if (input == "REMOVE") {
       cout << "Number to delete?" << endl;
       int n; cin >> n; cin.get();
       remove (root, n);
       cout << "Done." << endl;
-      }*/
+      }
     else if (input == "PRINT") { print (root, 0); }
     else if (input == "QUIT") {
       cout << "Sorry to see you go." << endl;
@@ -239,60 +240,146 @@ Node* search (Node* root, int n) {
   }
   return cur;
 }
-/*
+
 // delete a number from the tree
-void remove (Node* &root, int n) {
-  Node* p = find (root, n);
-  destroy (root, p, n);
-  root->setColor(0);
+void remove (Node* &root, int k) {
+  Node* n = search (root, k);
+  if (n) {
+    int c = n->getColor();
+    destroy(root, n, c);
+    root->setColor(0);
+    return;
+  }
+  else { cout << "Couldn't find that node." << endl; return; }
+}
+
+void destroy (Node* &root, Node* n, int c) {
+  Node* nCopy = n;
+  Node* x;
+  if (n->getLeft() == NULL) {
+    x = n->getRight();
+    if (nCopy == root) { root = x; }
+    else if (nCopy == nCopy->getParent()->getRight()) {
+      nCopy->getParent()->setRight(x);
+    }
+    else {
+      nCopy->getParent()->setLeft(x);
+    }
+    if (x) {
+      x->setParent(nCopy->getParent());
+    }
+    print(root, 0);
+  }
+  else if (n->getRight() == NULL) {
+    x = n->getLeft();
+    if (nCopy == root) { root = x; }
+    else if (nCopy == nCopy->getParent()->getRight()) {
+      nCopy->getParent()->setRight(x);
+    }
+    else {
+      nCopy->getParent()->setLeft(x);
+    }
+    if (x) {
+      x->setParent(nCopy->getParent());
+    }
+  }
+  else {
+    // successor
+    Node* s = nCopy->getRight();
+    if (s) {
+      while (s->getLeft()) { s = s->getLeft(); }
+    }
+    else { s = nCopy; }
+    c = s->getColor();
+    x = s->getRight();
+    if (x && (s == nCopy->getRight() || s == nCopy->getLeft())) {
+      x->setParent(s);
+    }
+    else {
+      if (s == root) { root = s->getRight(); }
+      else if (s == s->getParent()->getRight()) {
+	s->getParent()->setRight(s->getRight());
+      }
+      else {
+	s->getParent()->setRight(s->getRight());
+      }
+    }
+    if (nCopy == root) { root = s; }
+    else if (nCopy == nCopy->getParent()->getRight()) {
+      nCopy->getParent()->setRight(s);
+    }
+    else {
+      nCopy->getParent()->setLeft(s);
+    }
+    s->setParent(nCopy->getParent());
+      
+  }
+  
+  if (root && x && c == 0) {
+    destroyHelper(root, x);
+  }
+
   return;
 }
 
-
-void destroy (Node* &root, Node* p, int k) {
-  if (p) {
-    Node* n; // node to be deleted
-    if (k <= p->getValue()) { n = p->getLeft(); }
-    else { n = p->getRight(); }
+void destroyHelper (Node* &root, Node* x) {
+  while (x != root && x->getColor() == 0) {
+    if (x->getParent()->getLeft() == x) {
+      Node* w = x->getParent()->getRight();
+      if (w->getColor() == 1) { 
+	w->setColor(0);
+	x->getParent()->setColor(1);
+	leftRotate(root, x->getParent());
+	w = x->getParent()->getRight();
+      }
+      if (w->getRight()->getColor() == 0 && w->getLeft()->getColor() == 0) {
+	w->setColor(1);
+	x = x->getParent();
+      }
+      else if (w->getRight()->getColor() == 0) {
+	w->getLeft()->setColor(0);
+	w->setColor(1);
+	rightRotate(root, w);
+	w = x->getParent()->getRight();
+      }
+      else {
+	w->setColor(x->getParent()->getColor());
+	x->getParent()->setColor(0);
+	w->getRight()->setColor(0);
+	leftRotate(root, x->getParent());
+	x = root;
+      }
+    }
+    else {
+      Node* w = x->getParent()->getLeft();
+      if (w->getColor() == 1) {
+	w->setColor(0);
+	x->getParent()->setColor(1);
+	rightRotate(root, x->getParent());
+	w = x->getParent()->getLeft();
+      }
+      if (w->getLeft()->getColor() == 0 && w->getRight()->getColor() == 0) {
+	w->setColor(1);
+	x = x->getParent();
+      }
+      else if (w->getLeft()->getColor() == 0) {
+	w->getRight()->setColor(0);
+	w->setColor(1);
+	leftRotate(root, w);
+	w = x->getParent()->getLeft();
+      }
+      else {
+	w->setColor(x->getParent()->getColor());
+	x->getParent()->setColor(0);
+	w->getRight()->setColor(0);
+	rightRotate(root, x->getParent());
+	x = root;
+      }
+    }
+    x->setColor(0);
   }
-  else { // n is the root
-    n = root;
-  }
-  int numChildren = 0;
-  if (n->getLeft()) { numChildren ++; }
-  if (n->getRight()) { numChildren ++; }
-
-  // zero child deletion
-  if (numChildren == 0) {
-    if (n == root) { root = NULL; }
-    else if (n->getValue() <= p->getValue()) { p->setLeft(NULL); }
-    else if (n->getValue() > p->getValue()) { p->setRight(NULL); }
-  }
-
-  // one child deletion
-  else if (numChildren == 1) {
-    Node* c = n->getLeft();
-    if (!c) { c = n->getRight(); }
-    if (n == root) { root = c; }
-    else if (n->getValue() <= p->getValue()) { p->setLeft(c); }
-    else if (n->getValue() > p->getValue()) { p->setRight(c); }
-  }
-  
-  // two child deletion
-  else if (numChildren == 2) {
-    Node* s = n->getRight();
-    while (s->getLeft()) { s = s->getLeft(); }
-    n->setValue(s->getValue());
-    if (s->getRight() != NULL) { s->getParent()->setRight(s->getRight()); }
-    else if (s->getParent()->getRight() == s) { s->getParent()->setRight(NULL); }
-    else { s->getParent()->setLeft(NULL); }
-  }
-    
-  else { cout << "Something went wrong." << endl; }
-
-  return;  
 }
-*/
+
 // read numbers from a file
 void read (Node* &root) {
   // file info
