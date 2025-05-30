@@ -110,6 +110,8 @@ void insert (Node* &root, Node* p, int k) {
     return;
   }
 
+  cout << "HI" << endl;
+  
   // N's parent exists...
   if (n->getValue() <= p->getValue()) { p->setLeft(n); }
   else { p->setRight(n); }
@@ -125,7 +127,7 @@ void insert (Node* &root, Node* p, int k) {
     if (p->getValue() <= g->getValue()) {
       u = g->getRight();
     }
-    if (u) cout << u->getValue() << " " << u->getColor() << endl;
+
     // case 2: P is red (restructure/recolor needed)
     //   case 2a: U is black or null (restructure needed)
     // algorithm from https://www.programiz.com/dsa/red-black-tree
@@ -153,6 +155,7 @@ void insert (Node* &root, Node* p, int k) {
       // N <= P, P > G
       else if (n->getValue() <= p->getValue() && p->getValue() > g->getValue()) {
 	rightRotate(root, p);
+	print(root, 0);
 	p->getParent()->setColor(0);
 	g->setColor(1);
 	leftRotate(root, g);
@@ -171,7 +174,6 @@ void insert (Node* &root, Node* p, int k) {
       n = g;
       if (n) { p = n->getParent(); }
     }
-
 
     root->setColor(0);
   }
