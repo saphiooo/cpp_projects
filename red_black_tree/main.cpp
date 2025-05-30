@@ -11,8 +11,10 @@ void leftRotate (Node* &root, Node* n);
 void rightRotate (Node* &root, Node* n);
 void insert (Node* &root, Node* p, int n);
 Node* search (Node* root, int n);
-//void remove (Node* &root, int n);
-//void destroy (Node* &root, Node* p, int k);
+void remove (Node* &root, int n);
+void destroy (Node* &root, Node* p, int k);
+void restructure (Node* &root, Node* n); 
+void restructureHelper (Node* &root, Node* n, int c);
 void read (Node* &root);
 void print (Node* cur, int indent);
 
@@ -237,7 +239,7 @@ Node* search (Node* root, int n) {
   }
   return cur;
 }
-/*
+
 // delete a number from the tree
 void remove (Node* &root, int n) {
   Node* p = find (root, n);
@@ -250,7 +252,7 @@ void remove (Node* &root, int n) {
 void destroy (Node* &root, Node* p, int k) {
   if (p) {
     Node* n; // node to be deleted
-    if (k <= p->getValue()) { n = p->getLeft(); }
+    if (k < p->getValue()) { n = p->getLeft(); }
     else { n = p->getRight(); }
   }
   else { // n is the root
@@ -263,8 +265,13 @@ void destroy (Node* &root, Node* p, int k) {
   // zero child deletion
   if (numChildren == 0) {
     if (n == root) { root = NULL; }
-    else if (n->getValue() <= p->getValue()) { p->setLeft(NULL); }
-    else if (n->getValue() > p->getValue()) { p->setRight(NULL); }
+    else if (n->getColor() == 1) {
+      if (n->getValue() <= p->getValue()) { p->setLeft(NULL); }
+      else if (n->getValue() > p->getValue()) { p->setRight(NULL); }
+    }
+    else if (n->getColor() == 0) {
+      restructure (root, n); // , 1); case 1: remove black non-root leaf
+    }
   }
 
   // one child deletion
@@ -274,6 +281,7 @@ void destroy (Node* &root, Node* p, int k) {
     if (n == root) { root = c; }
     else if (n->getValue() <= p->getValue()) { p->setLeft(c); }
     else if (n->getValue() > p->getValue()) { p->setRight(c); }
+    c->setColor(0);
   }
   
   // two child deletion
@@ -290,7 +298,85 @@ void destroy (Node* &root, Node* p, int k) {
 
   return;  
 }
-*/
+
+// fix tree after deletion
+void restructure (Node* &root, Node* n) {
+  while (n && n != root && n->getColor() == 0) {
+    Node* p = n->getParent();
+    bool nOnLeft = (p->getLeft() == n);
+    Node* s = p->getLeft();
+    Node* c = NULL;
+    Node* d = NULL;
+    if (n->getValue() > p->getValue()) {
+      s = p->getRight();
+    }
+    if (s) {
+      if (nOnLeft) {
+	c = s->getLeft();
+	d = s->getRight();
+      }
+      else {
+	c = s->getRight();
+	d = s->getLeft();
+      }
+    }
+
+    // case 1: s is red
+    if (s && s->getColor() == 1) {
+      if (nOnLeft) { leftRotate(root, n); }
+      else { rightRotate(root, n); }
+      p->setColor(1);
+      s->setColor(0);
+      s = c;
+      if (nOnLeft) { c = s->getLeft(); d = s->getRight(); }
+      else { c = s->getRight(); d = s->getLeft(); }
+      // restore with re-iteration through other cases
+      if (d && d->getColor() == 1) {
+	restructureHelper(root, n, 1);
+      }
+      else if (c && c->getColor() == 1) {
+	restructureHelper(root, n, 2);
+      }
+      else {
+	s->setColor(1);
+	p->setColor(0);
+	return;
+      }
+      
+    }
+
+    // case 2: s is black, d is red
+    if (d && d->getColor() == 1) {
+      restructureHelper(root, n, 1);
+    }
+
+    // case 3: s is black, c is red
+    if (c && c->getColor() == 1) {
+      restructureHelper(root, n, 2);
+    }
+
+    // case 4: s, c, and d are black, p is red
+    if (p->getColor() == 1) {
+      s->getColor(1);
+      p->setColor(0);
+    }
+    
+    // case 5: p, s, c, and d are black
+    s->setColor(1);
+    n = p;
+  }
+  return;
+}
+
+void restructureHelper (Node* &root, Node* n, Node* p, Node* &s, Node* c, Node* &d, int cs) {
+  if (c == 1) {
+    cout << "hi" << endl;
+  }
+  else {
+    cout << "hi2" << endl;
+  }
+}
+
 // read numbers from a file
 void read (Node* &root) {
   // file info
