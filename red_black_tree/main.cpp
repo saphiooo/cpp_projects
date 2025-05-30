@@ -322,6 +322,7 @@ void destroy (Node* &root, Node* n, int c) {
   return;
 }
 
+<<<<<<< HEAD
 void destroyHelper (Node* &root, Node* x) {
   while (x != root && x->getColor() == 0) {
     if (x->getParent()->getLeft() == x) {
