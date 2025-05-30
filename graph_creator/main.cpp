@@ -176,12 +176,14 @@ void dijkstra (Node* nodes[20], int adj[20][20], string* l_a, string* l_b) {
   priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
   bool visited[20];
 
+  // get nodes
   int n = findNode(nodes, l_a);
   int d = findNode(nodes, l_b);
   if (n == -1 || d == -1) {
     return;
   }
-  
+
+  // dijkstra's algorithm
   for (int i = 0; i < 20; i++) {
     dist[i] = INT_MAX;
     prev[i] = -1;
@@ -194,7 +196,7 @@ void dijkstra (Node* nodes[20], int adj[20][20], string* l_a, string* l_b) {
   while (!pq.empty()) {
     auto [w, cur] = pq.top();
     pq.pop();
-    if (!visited[cur]) {
+    if (!visited[cur]) { // only check unvisited nodes
       visited[cur] = true;
       for (int i = 0; i < 20; i++) {
 	if (adj[cur][i] != -1 && dist[i] > dist[cur] + adj[cur][i]) {
