@@ -14,7 +14,7 @@ void addEdge (Node* nodes[20], int adj[20][20], string* l_a, string* l_b, int w)
 void removeNode (Node* nodes[20], int adj[20][20], string* l);
 void removeEdge (Node* nodes[20], int adj[20][20], string* l_a, string* l_b);
 // shortest path
-void dijkstra (Node* nodes[20], int adj[20][20], int n);
+void dijkstra (Node* nodes[20], int adj[20][20], string* l_a, string* l_b);
 // debugging
 void printAdj (Node* nodes[20], int adj[20][20]);
 
@@ -38,7 +38,8 @@ int main () {
 
   while (running) {
     string input;
-    cout << endl << "ADD VERTEX - add vertex" << endl;
+    cout << endl << "COMMANDS" << endl;
+    cout << "ADD VERTEX - add vertex" << endl;
     cout << "ADD EDGE - add edge" << endl;
     cout << "RM VERTEX - remove vertex" << endl;
     cout << "RM EDGE - remove edge" << endl;
@@ -85,7 +86,14 @@ int main () {
       removeEdge (nodes, adj, l_a, l_b);
     }
     else if (input == "SHORTEST PATH") {
-      dijkstra (nodes, adj, 0);
+      string l_a_in, l_b_in; string* l_a; string* l_b;
+      cout << "Enter label of the source node:" << endl;
+      getline (cin, l_a_in);
+      cout << "Enter label of the destination node:" << endl;
+      getline (cin, l_b_in);
+      l_a = new string(l_a_in);
+      l_b = new string(l_b_in);
+      dijkstra (nodes, adj, l_a, l_b);
     }
     else if (input == "PRINT") {
       printAdj(nodes, adj);
@@ -141,8 +149,8 @@ void removeNode (Node* nodes[20], int adj[20][20], string* l) {
   if (n == -1) { return; }
 
   for (int i = 0; i < 20; i++) {
-    adj[n][i] = 0;
-    adj[i][n] = 0;
+    adj[n][i] = -1;
+    adj[i][n] = -1;
   }
 
   delete nodes[n];
@@ -158,24 +166,26 @@ void removeEdge (Node* nodes[20], int adj[20][20], string* l_a, string* l_b) {
 
   if (a == -1 || b == -1) { return; }
   
-  adj[a][b] = 0;
+  adj[a][b] = -1;
   return;
 }
 
 // shortest path
-void dijkstra (Node* nodes[20], int adj[20][20], int n) {
+void dijkstra (Node* nodes[20], int adj[20][20], string* l_a, string* l_b) {
   int dist[20], prev[20];
   priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
   bool visited[20];
-  int c = 0;
+
+  int n = findNode(nodes, l_a);
+  int d = findNode(nodes, l_b);
+  if (n == -1 || d == -1) {
+    return;
+  }
   
   for (int i = 0; i < 20; i++) {
     dist[i] = INT_MAX;
     prev[i] = -1;
     visited[i] = false;
-  }
-  for (int i = 0; i < 20; i++) {
-    if (nodes[i] != NULL) { c++; }
   }
   prev[n] = -1;
   dist[n] = 0;
@@ -195,13 +205,11 @@ void dijkstra (Node* nodes[20], int adj[20][20], int n) {
       }
     }
   }
-
-  c--; // zero based indexing
   
   // backtrack print
-  if (dist[c] != INT_MAX) {
+  if (dist[d] != INT_MAX) {
     int path[20];
-    int i = 0, cur = c;
+    int i = 0, cur = d;
     while (prev[cur] != -1 && cur != 0) {
       path[i] = cur;
       cur = prev[cur];
@@ -209,7 +217,7 @@ void dijkstra (Node* nodes[20], int adj[20][20], int n) {
     }
     path[i] = cur;
     
-    cout << "Length of shortest path: " << dist[c] << endl;
+    cout << "Length of shortest path: " << dist[d] << endl;
     cout << "Path: ";
     for (int j = i; j >= 0; j--) {
       cout << *nodes[path[j]]->getLabel() << " ";
