@@ -1,10 +1,12 @@
-# Red-Black Tree (Insertion)
+# Red-Black Tree
 
-Insert nodes in a Red-Black tree.
+Insert and remove nodes in a Red-Black tree.
 
 Commands:
 
 ADD: Add a node.
+
+REMOVE: Remove a node.
 
 READ: Read in a file of space-separated integers and add them to the tree.
 
