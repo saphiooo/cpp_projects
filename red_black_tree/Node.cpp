@@ -13,8 +13,10 @@ Node::Node () {
 
 Node::Node (int v) {
   parent = NULL;
-  left = NULL;
-  right = NULL;
+  left = new Node();
+  right = new Node();
+  left->setParent(this);
+  right->setParent(this);
   value = v;
 }
 
