@@ -1,2 +1,3 @@
-# cpp_projects
-c++/data structures projects
+# C++ Projects
+
+A repository of projects for C++/Data Structures. 
